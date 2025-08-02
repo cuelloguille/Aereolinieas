@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Aerolinea{% endblock %}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0 1.5rem;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #004080;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        nav {
+            margin: 1rem 0;
+            text-align: center;
+        }
+        nav a {
+            color: #004080;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: color 0.3s ease;
+        }
+        nav a:hover,
+        nav a:focus {
+            color: #0066cc;
+            outline: none;
+        }
+        hr {
+            border: none;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2rem;
+        }
+        main {
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            background: white;
+            padding: 1.5rem;
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
+            border-radius: 6px;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            padding: 1rem 0;
+            border-top: 1px solid #ddd;
+        }
+        ul.messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        ul.messages li {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema de Gestión de Aerolínea</h1>
+    </header>
+    <nav aria-label="Menú principal">
+        
+            Hola, {{ user.username }} |
+            <a href="{% url 'mis_reservas' %}">Mis reservas</a> |
+            
+            <a href="{% url 'vuelos_list' %}">Vuelos</a> 
+            <a href="{% url 'login' %}">Ingresar</a> |
+            <a href="{% url 'registro' %}">Registrarse</a>
+            <a href="{% url 'logout' %}">Cerrar sesión</a>
+        
+    </nav>
+    <hr>
+    <main role="main">
+        {% if messages %}
+            <ul class="messages" role="alert">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        &copy; {{ year|default:"2025" }} Aerolínea - Todos los derechos reservados
+    </footer>
+</body>
+</html>

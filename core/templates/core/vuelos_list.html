@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Vuelos{% endblock %}
+
+{% block content %}
+<h2>Vuelos disponibles</h2>
+
+<ul>
+  {% for vuelo in vuelos %}
+    <li>
+      {{ vuelo.origen }} → {{ vuelo.destino }} | Salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
+      - <a href="{% url 'reservar_vuelo' vuelo.id %}">Reservar</a>
+    </li>
+  {% empty %}
+    <li>No hay vuelos disponibles.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar Vuelo{% endblock %}
+
+{% block content %}
+<h2>Reservar vuelo: {{ vuelo.origen }} → {{ vuelo.destino }}</h2>
+<p>Fecha de salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}</p>
+<p>Precio base: ${{ vuelo.precio_base }}</p>
+
+{% if asientos_disponibles %}
+  <form method="post">
+    {% csrf_token %}
+    <label for="asiento_id">Selecciona un asiento:</label>
+    <select name="asiento_id" id="asiento_id" required>
+      {% for asiento in asientos_disponibles %}
+        <option value="{{ asiento.id }}">Asiento {{ asiento.numero }} - {{ asiento.tipo }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Reservar</button>
+  </form>
+{% else %}
+  <p>No hay asientos disponibles para este vuelo.</p>
+{% endif %}
+
+<a href="{% url 'vuelos_list' %}">Volver a lista de vuelos</a>
+{% endblock %}

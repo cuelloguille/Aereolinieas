@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Reservas{% endblock %}
+
+{% block content %}
+<h2>Mis Reservas Activas</h2>
+
+<ul>
+  {% for reserva in reservas %}
+    <li>
+      Vuelo: {{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }} | Asiento: {{ reserva.asiento.numero }}
+      | Código: {{ reserva.codigo_reserva }}
+      | <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar</a>
+    </li>
+  {% empty %}
+    <li>No tienes reservas activas.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'vuelos_list' %}">Ver vuelos disponibles</a>
+{% endblock %}
