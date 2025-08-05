@@ -1,8 +1,12 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
+    # Redirigir la raíz '' a 'vuelos_list'
+    path('', RedirectView.as_view(pattern_name='vuelos_list', permanent=False)),
+
     path('vuelos/', views.vuelos_list, name='vuelos_list'),
     path('vuelos/<int:vuelo_id>/reservar/', views.reservar_vuelo, name='reservar_vuelo'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),

@@ -3,16 +3,25 @@
 {% block title %}Lista de Vuelos{% endblock %}
 
 {% block content %}
-<h2>Vuelos disponibles</h2>
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">✈️ Vuelos Disponibles</h2>
 
-<ul>
-  {% for vuelo in vuelos %}
-    <li>
-      {{ vuelo.origen }} → {{ vuelo.destino }} | Salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
-      - <a href="{% url 'reservar_vuelo' vuelo.id %}">Reservar</a>
-    </li>
-  {% empty %}
-    <li>No hay vuelos disponibles.</li>
-  {% endfor %}
-</ul>
+  {% if vuelos %}
+    <div class="list-group">
+      {% for vuelo in vuelos %}
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">{{ vuelo.origen }} → {{ vuelo.destino }}</h5>
+            <small class="text-muted">Salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}</small>
+          </div>
+          <a href="{% url 'reservar_vuelo' vuelo.id %}" class="btn btn-primary">Reservar</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center mt-4" role="alert">
+      No hay vuelos disponibles por el momento.
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

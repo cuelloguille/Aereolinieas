@@ -3,101 +3,83 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Aerolinea{% endblock %}</title>
+    <title>{% block title %}Aerolínea{% endblock %}</title>
+
+    <!-- ✅ Bootstrap 5 desde CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Estilos personalizados opcionales -->
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0 1.5rem;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        header {
-            background-color: #004080;
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        nav {
-            margin: 1rem 0;
-            text-align: center;
-        }
-        nav a {
-            color: #004080;
-            text-decoration: none;
-            font-weight: 600;
-            margin: 0 1rem;
-            transition: color 0.3s ease;
-        }
-        nav a:hover,
-        nav a:focus {
-            color: #0066cc;
-            outline: none;
-        }
-        hr {
-            border: none;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 2rem;
-        }
-        main {
-            max-width: 900px;
-            margin: 0 auto 3rem;
-            background: white;
-            padding: 1.5rem;
-            box-shadow: 0 0 8px rgba(0,0,0,0.05);
-            border-radius: 6px;
+            background-color: #f8f9fa;
         }
         footer {
             text-align: center;
             font-size: 0.9rem;
             color: #666;
             padding: 1rem 0;
-            border-top: 1px solid #ddd;
-        }
-        ul.messages {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 1rem;
-        }
-        ul.messages li {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 4px;
-            color: #155724;
+            border-top: 1px solid #dee2e6;
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Sistema de Gestión de Aerolínea</h1>
+    <!-- ✅ Header con Bootstrap -->
+    <header class="bg-primary text-white py-4 mb-3 shadow">
+        <div class="container text-center">
+            <h1 class="h3">Sistema de Gestión de Aerolínea</h1>
+        </div>
     </header>
-    <nav aria-label="Menú principal">
-        
-            Hola, {{ user.username }} |
-            <a href="{% url 'mis_reservas' %}">Mis reservas</a> |
-            
-            <a href="{% url 'vuelos_list' %}">Vuelos</a> 
-            <a href="{% url 'login' %}">Ingresar</a> |
-            <a href="{% url 'registro' %}">Registrarse</a>
-            <a href="{% url 'logout' %}">Cerrar sesión</a>
-        
-    </nav>
-    <hr>
-    <main role="main">
-        {% if messages %}
-            <ul class="messages" role="alert">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar navbar-expand-md navbar-light bg-light mb-4 shadow-sm">
+        <div class="container justify-content-center">
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-link disabled">Hola, {{ user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'mis_reservas' %}">Mis reservas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'vuelos_list' %}">Vuelos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="{% url 'logout' %}">Cerrar sesión</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Ingresar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro' %}">Registrarse</a>
+                    </li>
+                {% endif %}
             </ul>
+        </div>
+    </nav>
+
+    <!-- ✅ Contenido principal -->
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            {% endfor %}
         {% endif %}
+
         {% block content %}{% endblock %}
     </main>
+
+    <!-- ✅ Footer -->
     <footer>
         &copy; {{ year|default:"2025" }} Aerolínea - Todos los derechos reservados
     </footer>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
