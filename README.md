@@ -29,88 +29,88 @@ Este proyecto está desarrollado en **Django** y permite gestionar vuelos, reser
 
 ```plaintext
 aerolinea/           # Configuración general de Django  
-core/                # Aplicaciones:  vuelos, reservas, etc.  
+apps/                # Aplicaciones: core, vuelos, reservas, etc.  
 templates/           # Plantillas HTML  
+static/              # Archivos estáticos (CSS, JS, imágenes)  
+```
 
-⚙️ Instalación y puesta en marcha
-1. Clonar el repositorio
-bash
-Copiar
-Editar
+---
+
+## ⚙️ Instalación y puesta en marcha
+
+### 1. Clonar el repositorio
+
+```bash
 git clone https://github.com/cuelloguille/Aereolinieas.git
 cd Aereolinieas
-2. Crear y activar entorno virtual (recomendado)
-Linux/macOS:
+```
 
-bash
-Copiar
-Editar
+### 2. Crear y activar entorno virtual (recomendado)
+
+Linux/macOS:
+```bash
 python3 -m venv env
 source env/bin/activate
-Windows:
+```
 
-bash
-Copiar
-Editar
+Windows:
+```bash
 python -m venv env
 .\env\Scripts\activate
-3. Instalar dependencias
-bash
-Copiar
-Editar
-pip install -r requirements.txt
-Si no existe el archivo requirements.txt, instalá Django manualmente:
+```
 
-bash
-Copiar
-Editar
+### 3. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+*Si no existe el archivo `requirements.txt`, instalá Django manualmente:*
+
+```bash
 pip install django
-4. Aplicar migraciones
-bash
-Copiar
-Editar
+```
+
+### 4. Aplicar migraciones
+
+```bash
 python manage.py makemigrations
 python manage.py migrate
-5. Crear superusuario
-bash
-Copiar
-Editar
+```
+
+### 5. Crear superusuario
+
+```bash
 python manage.py createsuperuser
-6. Ejecutar servidor local
-bash
-Copiar
-Editar
+```
+
+### 6. Ejecutar servidor local
+
+```bash
 python manage.py runserver
-7. Acceder a la aplicación
-App principal: http://127.0.0.1:8000/
+```
 
-Panel admin: http://127.0.0.1:8000/admin/
+### 7. Acceder a la aplicación
 
+- App principal: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)  
+- Panel admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)  
+- Página vuelos: [http://127.0.0.1:8000/vuelos/](http://127.0.0.1:8000/vuelos/)  
 
-📖 Descripción del proyecto
-Este proyecto está diseñado para gestionar una aerolínea, con un enfoque claro en la experiencia tanto del administrador como del usuario final. La aplicación permite a los administradores controlar y gestionar todos los aspectos operativos del sistema, mientras que los usuarios pueden consultar vuelos y realizar reservas de manera sencilla y segura.
+---
 
-Funcionalidades para el Administrador
-Gestión completa de vuelos: Crear, modificar y eliminar vuelos disponibles, incluyendo detalles como origen, destino, horarios y precios.
+## 🙋‍♂️ Usuarios y roles
 
-Administración de aviones y asientos: Controlar la flota de aviones y configurar la disponibilidad y características de los asientos para cada vuelo.
+| Rol             | Funciones principales                              |
+|-----------------|---------------------------------------------------|
+| Administrador   | Gestión total: vuelos, usuarios, aviones, reservas|
+| Usuario Cliente | Registro, inicio de sesión, ver vuelos, reservar y cancelar|
 
-Gestión de reservas y pasajeros: Visualizar, aprobar, cancelar o modificar reservas realizadas por los usuarios, así como gestionar la información de los pasajeros.
+---
 
-Control de usuarios y roles: Crear y administrar cuentas de usuario, asignando roles (administrador o cliente) para controlar el acceso a diferentes funcionalidades.
+## 📝 Notas adicionales
 
-Acceso al panel administrativo: Usar el panel de administración de Django para tener una vista centralizada y poderosa del sistema, facilitando tareas administrativas y reportes.
+- El proyecto está preparado para usarse en desarrollo (DEBUG=True).  
+- Para producción, ajustar configuración de seguridad y base de datos.  
+- Puedes extenderlo integrando pasarelas de pago, email, o APIs externas.  
 
-Funcionalidades para el Usuario
-Registro e inicio de sesión: Crear una cuenta personal para acceder al sistema y gestionar sus reservas.
-
-Consulta de vuelos disponibles: Visualizar fácilmente la lista de vuelos con información clara y detallada para planificar su viaje.
-
-Reserva de vuelos: Seleccionar un vuelo y reservar un asiento disponible, con confirmación instantánea.
-
-Cancelación de reservas: Permitir al usuario cancelar sus reservas de manera sencilla, liberando los asientos para otros pasajeros.
-
-Gestión de perfil: Actualizar sus datos personales y visualizar el historial de reservas realizadas.
-
-Objetivo
-El objetivo principal es brindar una solución completa y funcional para la gestión de aerolíneas que pueda ser utilizada tanto como base para proyectos académicos o personales, como para adaptarse a necesidades reales del negocio. El sistema se enfoca en la seguridad, usabilidad y una arquitectura clara que facilite futuras ampliaciones y mejoras.
+---
