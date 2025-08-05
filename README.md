@@ -25,30 +25,14 @@ Este es un proyecto web desarrollado con **Django** para gestionar una aerolíne
 
 git clone https://github.com/cuelloguille/Aereolinieas.git
 cd Aereolinieas
-2. Crear y activar el entorno virtual
-En Windows:
-bash
-Copiar
-Editar
-python -m venv env
-env\Scripts\activate
-En Linux/Mac:
-bash
-Copiar
-Editar
-python3 -m venv env
-source env/bin/activate
+2. instalar django 
 
-3. Instalar dependencias
-bash
-Copiar
-Editar
-pip install -r requirements.txt
+
 
 
 5. Aplicar migraciones
 bash
-Copiar
+CopiarW
 Editar
 python manage.py makemigrations
 python manage.py migrate
