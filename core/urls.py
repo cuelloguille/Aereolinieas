@@ -18,4 +18,6 @@ urlpatterns = [
 
     # Registro personalizado
     path('registro/', views.registro, name='registro'),
+
+    path('reserva/<int:reserva_id>/boleto/', views.generar_boleto_pdf, name='generar_boleto_pdf'),
 ]

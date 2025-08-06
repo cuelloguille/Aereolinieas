@@ -73,7 +73,8 @@ class Asiento(models.Model):
 class Reserva(models.Model):
     vuelo = models.ForeignKey(Vuelo, on_delete=models.CASCADE, related_name='reservas')
     pasajero = models.ForeignKey(Pasajero, on_delete=models.CASCADE, related_name='reservas')
-    asiento = models.OneToOneField(Asiento, on_delete=models.PROTECT, related_name='reserva')
+    asiento = models.ForeignKey(Asiento, on_delete=models.PROTECT, related_name='reservas')  # cambiado de OneToOne a ForeignKey
+
     ESTADO_CHOICES = (
         ('activa', 'Activa'),
         ('cancelada', 'Cancelada'),
@@ -85,10 +86,14 @@ class Reserva(models.Model):
     codigo_reserva = models.CharField(max_length=12, unique=True)
 
     class Meta:
-        unique_together = ('vuelo', 'pasajero')  # Restricción: un pasajero no puede tener más de una reserva activa por vuelo
+        constraints = [
+            models.UniqueConstraint(fields=['vuelo', 'asiento'], name='reserva_asiento_unico_por_vuelo'),
+            models.UniqueConstraint(fields=['vuelo', 'pasajero'], name='reserva_pasajero_unico_por_vuelo'),
+        ]
 
     def __str__(self):
-        return f"Reserva {self.codigo_reserva} - {self.pasajero.nombre}"
+        return f"{self.codigo_reserva} - {self.pasajero} en {self.vuelo}"
+
 
 class Boleto(models.Model):
     reserva = models.OneToOneField(Reserva, on_delete=models.CASCADE, related_name='boleto')
