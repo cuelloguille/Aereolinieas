@@ -2,11 +2,13 @@
 # IMPORTS
 # ========================
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse
+
 import random
 import string
 import io
@@ -176,3 +178,5 @@ def generar_boleto_pdf(request, reserva_id):
     buffer.seek(0)
 
     return HttpResponse(buffer, content_type='application/pdf')
+
+
