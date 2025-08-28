@@ -158,25 +158,79 @@ def generar_boleto_pdf(request, reserva_id):
 
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
 
+    # ===============================
+    # Colores
+    # ===============================
+    color_header = (0.2, 0.4, 0.6)   # azul oscuro
+    color_box = (0.95, 0.95, 0.95)   # gris claro
+    color_code = (0.9, 0.2, 0.2)     # rojo para el código
+    margin = 50
+
+    # ===============================
     # Cabecera
-    p.setFont("Helvetica-Bold", 18)
-    p.drawString(180, 750, "Boleto de Reserva")
+    # ===============================
+    p.setFillColorRGB(*color_header)
+    p.rect(0, height - 100, width, 100, fill=True, stroke=False)
+    p.setFillColorRGB(1, 1, 1)
+    p.setFont("Helvetica-Bold", 24)
+    p.drawCentredString(width / 2, height - 60, "Boleto de Reserva")
 
-    # Detalles
+    # ===============================
+    # Información del pasajero
+    # ===============================
+   
+
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(margin + 10, height - 150, "Pasajero:")
     p.setFont("Helvetica", 12)
-    p.drawString(100, 700, f"Pasajero: {reserva.pasajero.nombre}")
-    p.drawString(100, 680, f"Documento: {reserva.pasajero.documento}")
-    p.drawString(100, 660, f"Vuelo: {reserva.vuelo.origen} → {reserva.vuelo.destino}")
-    p.drawString(100, 640, f"Fecha de salida: {reserva.vuelo.fecha_salida.strftime('%d/%m/%Y %H:%M')}")
-    p.drawString(100, 620, f"Asiento: {reserva.asiento.numero}")
-    p.drawString(100, 600, f"Código de Reserva: {reserva.codigo_reserva}")
-    p.drawString(100, 580, f"Precio: ${reserva.precio}")
+    p.drawString(margin + 20, height - 170, f"Nombre: {reserva.pasajero.nombre}")
+    p.drawString(margin + 20, height - 190, f"Documento: {reserva.pasajero.documento}")
+
+    # ===============================
+    # Información del vuelo
+    # ===============================
+
+
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(margin + 10, height - 280, "Vuelo:")
+    p.setFont("Helvetica", 12)
+    p.drawString(margin + 20, height - 300, f"Ruta: {reserva.vuelo.origen} → {reserva.vuelo.destino}")
+    p.drawString(margin + 20, height - 320, f"Fecha: {reserva.vuelo.fecha_salida.strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(margin + 20, height - 340, f"Asiento: {reserva.asiento.numero}")
+    p.drawString(margin + 20, height - 360, f"Precio: ${reserva.precio:,.2f}")
+
+    # ===============================
+    # Código de reserva destacado
+    # ===============================
+    code_box_width = 250
+    code_box_height = 60
+    code_x = (width - code_box_width) / 2
+    code_y = height - 450 - code_box_height
+
+    p.setFillColorRGB(*color_code)
+    p.roundRect(code_x, code_y, code_box_width, code_box_height, 8, fill=True, stroke=False)
+    p.setFillColorRGB(1, 1, 1)
+    p.setFont("Helvetica-Bold", 20)
+    p.drawCentredString(width / 2, code_y + 20, reserva.codigo_reserva.upper())
+
+    # Mensaje de privacidad sobre el código
+    p.setFont("Helvetica-Oblique", 10)
+    p.setFillColorRGB(0, 0, 0)
+    p.drawCentredString(width / 2, code_y - 15, "Código de uso personal. No compartir con nadie.")
+
+    # ===============================
+    # Footer
+    # ===============================
+    p.setFont("Helvetica-Oblique", 10)
+    p.setFillColorRGB(0.4, 0.4, 0.4)
+    p.drawCentredString(width / 2, 30, "Gracias por elegir nuestra Aerolínea. ¡Buen viaje!")
 
     p.showPage()
     p.save()
     buffer.seek(0)
 
     return HttpResponse(buffer, content_type='application/pdf')
-
-

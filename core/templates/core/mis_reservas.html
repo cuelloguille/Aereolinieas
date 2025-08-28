@@ -10,7 +10,7 @@
     <li>
       Vuelo: {{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }} |
       Asiento: {{ reserva.asiento.numero }} |
-      Código: {{ reserva.codigo_reserva }} |
+      
       <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar</a> |
       <a href="{% url 'generar_boleto_pdf' reserva.id %}" class="btn btn-success">
         Descargar Boleto PDF
