@@ -131,17 +131,46 @@ def cancelar_reserva(request, reserva_id):
 # ========================
 # REGISTRO DE USUARIOS
 # ========================
-
 def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, "Registro exitoso. ¡Bienvenido/a!")
-            return redirect('vuelos_list')
+            documento = form.cleaned_data.get('documento')  # obtener documento del formulario
+
+            # Verificar si ya existe un pasajero con ese documento
+            if Pasajero.objects.filter(documento=documento).exists():
+                messages.error(request, "El documento ya está registrado.")
+                return redirect('registro')
+
+            try:
+                with transaction.atomic():
+                    # Crear usuario
+                    user = form.save(commit=False)
+                    user.rol = 'cliente'  # rol por defecto
+                    user.save()
+
+                    # Crear pasajero asociado
+                    Pasajero.objects.create(
+                        usuario=user,
+                        nombre=form.cleaned_data.get('nombre'),
+                        documento=documento,
+                        email=form.cleaned_data.get('email'),
+                        telefono=form.cleaned_data.get('telefono'),
+                        fecha_nacimiento=form.cleaned_data.get('fecha_nacimiento'),
+                        tipo_documento=form.cleaned_data.get('tipo_documento'),
+                    )
+
+                login(request, user)
+                messages.success(request, "Registro exitoso. ¡Bienvenido/a!")
+                return redirect('vuelos_list')
+
+            except IntegrityError:
+                messages.error(request, "Ocurrió un error al registrar el usuario. Intenta de nuevo.")
+                return redirect('registro')
+
         else:
-            messages.error(request, "Error en el registro.")
+            messages.error(request, "Por favor corrige los errores en el formulario.")
+
     else:
         form = RegistroForm()
 

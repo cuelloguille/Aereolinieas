@@ -1,22 +1,23 @@
-"""
-Django settings for aerolinea project.
-"""
+# settings.py
 
+import os
 from pathlib import Path
 
-# BASE_DIR: ruta base del proyecto
+# ---------------------------
+# Rutas base del proyecto
+# ---------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ==============================
+# ---------------------------
 # Seguridad
-# ==============================
-SECRET_KEY = 'django-insecure-fk$zhlny_sb4-yj%8+f0=@dwfa3a1l-fo(^t%adtfk-ik5ssbx'
+# ---------------------------
+SECRET_KEY = 'tu_clave_secreta_aqui'
 DEBUG = True
-ALLOWED_HOSTS = []   # Agrega dominios/ips en producción
+ALLOWED_HOSTS = []
 
-# ==============================
+# ---------------------------
 # Aplicaciones instaladas
-# ==============================
+# ---------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,13 +26,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Apps locales
-    'core',
+    # Apps de tu proyecto
+    'core',  # tu app donde están los modelos
+
+    # Django REST Framework
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'drf_yasg',
+
+    # Filtros
+    'django_filters',
 ]
 
-# ==============================
-# Middleware
-# ==============================
+# ---------------------------
+# Middlewares
+# ---------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -42,21 +52,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ==============================
-# URLs y WSGI
-# ==============================
+# ---------------------------
+# Rutas principales
+# ---------------------------
 ROOT_URLCONF = 'aerolinea.urls'
 
-WSGI_APPLICATION = 'aerolinea.wsgi.application'
-
-# ==============================
+# ---------------------------
 # Templates
-# ==============================
+# ---------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Puedes agregar aquí tu carpeta global de templates si la usas
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,9 +76,14 @@ TEMPLATES = [
     },
 ]
 
-# ==============================
-# Base de datos
-# ==============================
+# ---------------------------
+# WSGI
+# ---------------------------
+WSGI_APPLICATION = 'aerolinea.wsgi.application'
+
+# ---------------------------
+# Base de datos (SQLite para pruebas)
+# ---------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -79,44 +91,80 @@ DATABASES = {
     }
 }
 
-# ==============================
-# Validación de contraseñas
-# ==============================
+# ---------------------------
+# Contraseñas
+# ---------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 8}
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
 ]
 
-# ==============================
+# ---------------------------
 # Internacionalización
-# ==============================
-LANGUAGE_CODE = 'es'
+# ---------------------------
+LANGUAGE_CODE = 'es-ar'
 TIME_ZONE = 'America/Argentina/Buenos_Aires'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# ==============================
+# ---------------------------
 # Archivos estáticos
-# ==============================
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# ---------------------------
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# ==============================
-# Usuario personalizado
-# ==============================
+# ---------------------------
+# Media
+# ---------------------------
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# ---------------------------
+# DRF Configuración
+# ---------------------------
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+# ---------------------------
+# JWT Config
+# ---------------------------
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # 1 hora
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
+
+# ---------------------------
+# Login URL
+# ---------------------------
+LOGIN_URL = '/login/'
 AUTH_USER_MODEL = 'core.Usuario'
-
-# ==============================
-# Autenticación (login/logout)
-# ==============================
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'vuelos_list'
-LOGOUT_REDIRECT_URL = 'login'
-
-# ==============================
-# Clave primaria por defecto
-# ==============================
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

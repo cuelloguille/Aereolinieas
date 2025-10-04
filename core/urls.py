@@ -1,9 +1,26 @@
-from django.urls import path
+# core/urls.py
+
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from . import views
+from rest_framework.routers import DefaultRouter
+from .api import VueloViewSet, PasajeroViewSet, ReservaViewSet, AvionViewSet, BoletoViewSet
 
-urlpatterns = [
+# ---------------------------
+# Router API DRF
+# ---------------------------
+router = DefaultRouter()
+router.register(r'vuelos', VueloViewSet, basename='vuelo')
+router.register(r'pasajeros', PasajeroViewSet, basename='pasajero')
+router.register(r'reservas', ReservaViewSet, basename='reserva')
+router.register(r'aviones', AvionViewSet, basename='avion')
+router.register(r'boletos', BoletoViewSet, basename='boleto')
+
+# ---------------------------
+# URLs web tradicionales
+# ---------------------------
+web_urls = [
     # Redirigir la raíz '' a 'vuelos_list'
     path('', RedirectView.as_view(pattern_name='vuelos_list', permanent=False)),
 
@@ -20,4 +37,18 @@ urlpatterns = [
     path('registro/', views.registro, name='registro'),
 
     path('reserva/<int:reserva_id>/boleto/', views.generar_boleto_pdf, name='generar_boleto_pdf'),
+]
+
+# ---------------------------
+# URLs API REST
+# ---------------------------
+api_urls = [
+    path('', include(router.urls)),
+]
+
+# ---------------------------
+# URLs finales
+# ---------------------------
+urlpatterns = web_urls + [
+    path('api/', include(api_urls)),
 ]
