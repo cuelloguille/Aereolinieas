@@ -2,12 +2,12 @@
 # IMPORTS
 # ========================
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse
+from django.contrib.auth.forms import AuthenticationForm
 
 import random
 import string
@@ -21,9 +21,33 @@ from reportlab.lib.pagesizes import letter
 
 
 # ========================
+# LOGIN PERSONALIZADO
+# ========================
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+
+            # Redirección según rol
+            if user.is_staff or user.is_superuser:
+                messages.success(request, f"Bienvenido, Admin {user.username}!")
+                return redirect('/admin/')
+            else:
+                messages.success(request, f"Bienvenido, {user.username}!")
+                return redirect('vuelos_list')
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'core/login.html', {'form': form})
+
+
+# ========================
 # VISTAS DE VUELOS
 # ========================
-
 @login_required
 def vuelos_list(request):
     vuelos = Vuelo.objects.filter(estado='activo')
@@ -33,7 +57,6 @@ def vuelos_list(request):
 # ========================
 # VISTAS DE RESERVAS
 # ========================
-
 @login_required
 def reservar_vuelo(request, vuelo_id):
     vuelo = get_object_or_404(Vuelo, id=vuelo_id, estado='activo')
@@ -118,8 +141,9 @@ def cancelar_reserva(request, reserva_id):
     if request.method == 'POST':
         with transaction.atomic():
             reserva.estado = 'cancelada'
-            reserva.asiento.estado = 'disponible'
-            reserva.asiento.save()
+            if reserva.asiento:
+                reserva.asiento.estado = 'disponible'
+                reserva.asiento.save()
             reserva.save()
 
         messages.success(request, "Reserva cancelada correctamente.")
@@ -135,21 +159,18 @@ def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            documento = form.cleaned_data.get('documento')  # obtener documento del formulario
+            documento = form.cleaned_data.get('documento')
 
-            # Verificar si ya existe un pasajero con ese documento
             if Pasajero.objects.filter(documento=documento).exists():
                 messages.error(request, "El documento ya está registrado.")
                 return redirect('registro')
 
             try:
                 with transaction.atomic():
-                    # Crear usuario
                     user = form.save(commit=False)
-                    user.rol = 'cliente'  # rol por defecto
+                    user.rol = 'cliente'
                     user.save()
 
-                    # Crear pasajero asociado
                     Pasajero.objects.create(
                         usuario=user,
                         nombre=form.cleaned_data.get('nombre'),
@@ -161,7 +182,7 @@ def registro(request):
                     )
 
                 login(request, user)
-                messages.success(request, "Registro exitoso. ¡Bienvenido/a!")
+                messages.success(request, f"Registro exitoso. ¡Bienvenido, {user.username}!")
                 return redirect('vuelos_list')
 
             except IntegrityError:
@@ -180,7 +201,6 @@ def registro(request):
 # ========================
 # GENERAR BOLETO EN PDF
 # ========================
-
 @login_required
 def generar_boleto_pdf(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, pasajero__usuario=request.user)
@@ -189,28 +209,19 @@ def generar_boleto_pdf(request, reserva_id):
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    # ===============================
     # Colores
-    # ===============================
-    color_header = (0.2, 0.4, 0.6)   # azul oscuro
-    color_box = (0.95, 0.95, 0.95)   # gris claro
-    color_code = (0.9, 0.2, 0.2)     # rojo para el código
+    color_header = (0.2, 0.4, 0.6)
+    color_code = (0.9, 0.2, 0.2)
     margin = 50
 
-    # ===============================
     # Cabecera
-    # ===============================
     p.setFillColorRGB(*color_header)
     p.rect(0, height - 100, width, 100, fill=True, stroke=False)
     p.setFillColorRGB(1, 1, 1)
     p.setFont("Helvetica-Bold", 24)
     p.drawCentredString(width / 2, height - 60, "Boleto de Reserva")
 
-    # ===============================
-    # Información del pasajero
-    # ===============================
-   
-
+    # Pasajero
     p.setFillColorRGB(0, 0, 0)
     p.setFont("Helvetica-Bold", 14)
     p.drawString(margin + 10, height - 150, "Pasajero:")
@@ -218,23 +229,18 @@ def generar_boleto_pdf(request, reserva_id):
     p.drawString(margin + 20, height - 170, f"Nombre: {reserva.pasajero.nombre}")
     p.drawString(margin + 20, height - 190, f"Documento: {reserva.pasajero.documento}")
 
-    # ===============================
-    # Información del vuelo
-    # ===============================
-
-
-    p.setFillColorRGB(0, 0, 0)
+    # Vuelo
     p.setFont("Helvetica-Bold", 14)
     p.drawString(margin + 10, height - 280, "Vuelo:")
     p.setFont("Helvetica", 12)
+    asiento_numero = reserva.asiento.numero if reserva.asiento else "Sin asignar"
+    fecha_vuelo = reserva.vuelo.fecha_salida.strftime('%d/%m/%Y %H:%M') if hasattr(reserva.vuelo, 'fecha_salida') else "Fecha no disponible"
     p.drawString(margin + 20, height - 300, f"Ruta: {reserva.vuelo.origen} → {reserva.vuelo.destino}")
-    p.drawString(margin + 20, height - 320, f"Fecha: {reserva.vuelo.fecha_salida.strftime('%d/%m/%Y %H:%M')}")
-    p.drawString(margin + 20, height - 340, f"Asiento: {reserva.asiento.numero}")
+    p.drawString(margin + 20, height - 320, f"Fecha: {fecha_vuelo}")
+    p.drawString(margin + 20, height - 340, f"Asiento: {asiento_numero}")
     p.drawString(margin + 20, height - 360, f"Precio: ${reserva.precio:,.2f}")
 
-    # ===============================
-    # Código de reserva destacado
-    # ===============================
+    # Código
     code_box_width = 250
     code_box_height = 60
     code_x = (width - code_box_width) / 2
@@ -246,14 +252,12 @@ def generar_boleto_pdf(request, reserva_id):
     p.setFont("Helvetica-Bold", 20)
     p.drawCentredString(width / 2, code_y + 20, reserva.codigo_reserva.upper())
 
-    # Mensaje de privacidad sobre el código
+    # Mensaje privacidad
     p.setFont("Helvetica-Oblique", 10)
     p.setFillColorRGB(0, 0, 0)
     p.drawCentredString(width / 2, code_y - 15, "Código de uso personal. No compartir con nadie.")
 
-    # ===============================
     # Footer
-    # ===============================
     p.setFont("Helvetica-Oblique", 10)
     p.setFillColorRGB(0.4, 0.4, 0.4)
     p.drawCentredString(width / 2, 30, "Gracias por elegir nuestra Aerolínea. ¡Buen viaje!")
@@ -261,5 +265,4 @@ def generar_boleto_pdf(request, reserva_id):
     p.showPage()
     p.save()
     buffer.seek(0)
-
     return HttpResponse(buffer, content_type='application/pdf')

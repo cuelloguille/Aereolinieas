@@ -96,6 +96,11 @@ python manage.py runserver
 - Panel admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)  
 - Página vuelos: [http://127.0.0.1:8000/vuelos/](http://127.0.0.1:8000/vuelos/)  
 
+ → interfaz Swagger interactiva http://127.0.0.1:8000/swagger/
+
+
+ → documentación estilo ReDoc http://127.0.0.1:8000/redoc/
+
 ---
 
 ## 🙋‍♂️ Usuarios y roles

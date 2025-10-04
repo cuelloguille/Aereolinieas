@@ -1,10 +1,9 @@
-# core/api.py
-
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Vuelo, Pasajero, Reserva, Avion, Boleto
 from .serializers import VueloSerializer, PasajeroSerializer, ReservaSerializer, AvionSerializer, BoletoSerializer
+from .permissions import IsAdmin, IsCliente  # 👈 NUEVO
 
 # ---------------------------
 # VUELOS
@@ -19,14 +18,16 @@ class VueloViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
-        return [permissions.IsAdminUser()]
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdmin()]
+        return [permissions.IsAuthenticated()]
 
-    # Reporte: pasajeros por vuelo
     @action(detail=True, methods=['get'])
     def pasajeros(self, request, pk=None):
         vuelo = self.get_object()
         pasajeros = vuelo.reservas.filter(estado='confirmada').values('pasajero__id', 'pasajero__nombre', 'pasajero__email')
         return Response(pasajeros)
+
 
 # ---------------------------
 # PASAJEROS
@@ -36,16 +37,18 @@ class PasajeroViewSet(viewsets.ModelViewSet):
     serializer_class = PasajeroSerializer
 
     def get_permissions(self):
-        if self.action in ['create']:
+        if self.action == 'create':
             return [permissions.AllowAny()]  # cualquier usuario puede registrarse
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdmin()]
         return [permissions.IsAuthenticated()]
 
-    # Listar reservas de un pasajero
     @action(detail=True, methods=['get'])
     def reservas(self, request, pk=None):
         pasajero = self.get_object()
         reservas = pasajero.reservas.values('id', 'vuelo__origen', 'vuelo__destino', 'estado')
         return Response(reservas)
+
 
 # ---------------------------
 # RESERVAS
@@ -55,11 +58,12 @@ class ReservaViewSet(viewsets.ModelViewSet):
     serializer_class = ReservaSerializer
 
     def get_permissions(self):
-        if self.action in ['create']:
-            return [permissions.IsAuthenticated()]
+        if self.action == 'create':
+            return [IsCliente()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdmin()]
         return [permissions.IsAuthenticated()]
 
-    # Cambiar estado de reserva
     @action(detail=True, methods=['post'])
     def cambiar_estado(self, request, pk=None):
         reserva = self.get_object()
@@ -69,6 +73,7 @@ class ReservaViewSet(viewsets.ModelViewSet):
         reserva.estado = nuevo_estado
         reserva.save()
         return Response({'status': 'ok', 'nuevo_estado': reserva.estado})
+
 
 # ---------------------------
 # AVIONES
@@ -80,13 +85,13 @@ class AvionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
-        return [permissions.IsAdminUser()]
+        return [IsAdmin()]
 
-    # Layout de asientos
     @action(detail=True, methods=['get'])
     def asientos(self, request, pk=None):
         avion = self.get_object()
-        return Response({'asientos': avion.asientos_disponibles()})  # Método que deberías tener en tu modelo
+        return Response({'asientos': avion.asientos_disponibles()})
+
 
 # ---------------------------
 # BOLETOS
@@ -97,10 +102,11 @@ class BoletoViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['retrieve', 'list']:
-            return [permissions.IsAuthenticated()]
-        return [permissions.IsAdminUser()]
+            return [IsCliente()]
+        elif self.action in ['create', 'update', 'destroy']:
+            return [IsAdmin()]
+        return [permissions.IsAuthenticated()]
 
-    # Generar boleto desde reserva confirmada
     @action(detail=False, methods=['post'])
     def generar(self, request):
         reserva_id = request.data.get('reserva_id')
@@ -111,3 +117,10 @@ class BoletoViewSet(viewsets.ModelViewSet):
         
         boleto = Boleto.objects.create(reserva=reserva, codigo=f'B-{reserva.id:06d}')
         return Response({'status': 'ok', 'boleto_id': boleto.id, 'codigo': boleto.codigo})
+
+    @action(detail=True, methods=['post'])
+    def usar(self, request, pk=None):
+        boleto = self.get_object()
+        boleto.estado = 'usado'
+        boleto.save()
+        return Response({'status': 'ok'})
