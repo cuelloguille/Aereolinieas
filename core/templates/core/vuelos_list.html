@@ -6,21 +6,52 @@
 <div class="container mt-5">
   <h2 class="mb-4 text-center">✈️ Vuelos Disponibles</h2>
 
+  <!-- FORMULARIO DE FILTRO -->
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <input type="text" name="origen" placeholder="Origen" class="form-control" value="{{ request.GET.origen|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="destino" placeholder="Destino" class="form-control" value="{{ request.GET.destino|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <input type="date" name="fecha" class="form-control" value="{{ request.GET.fecha|default_if_none:'' }}">
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </form>
+
+  <!-- LISTA DE VUELOS -->
   {% if vuelos %}
     <div class="list-group">
       {% for vuelo in vuelos %}
-        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center flex-wrap">
           <div>
             <h5 class="mb-1">{{ vuelo.origen }} → {{ vuelo.destino }}</h5>
-            <small class="text-muted">Salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}</small>
+            <small class="text-muted">
+              Salida: {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
+              <br>
+              Avión: {{ vuelo.avion.modelo }}
+            </small>
           </div>
-          <a href="{% url 'reservar_vuelo' vuelo.id %}" class="btn btn-primary">Reservar</a>
+          <div class="d-flex gap-2 mt-2 mt-md-0">
+            <!-- Botón para ver detalle -->
+            <a href="{% url 'detalle_de_vuelo' vuelo.id %}" class="btn btn-outline-info btn-sm">
+              🔍 Detalle
+            </a>
+
+            <!-- Botón para reservar -->
+            <a href="{% url 'reservar_vuelo' vuelo.id %}" class="btn btn-primary btn-sm">
+              🪪 Reservar
+            </a>
+          </div>
         </div>
       {% endfor %}
     </div>
   {% else %}
     <div class="alert alert-info text-center mt-4" role="alert">
-      No hay vuelos disponibles por el momento.
+      No se encontraron vuelos para los criterios seleccionados.
     </div>
   {% endif %}
 </div>

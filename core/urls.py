@@ -52,6 +52,9 @@ web_urls = [
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
     path('cancelar-reserva/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
 
+    # ✅ NUEVA RUTA: Detalle de vuelo
+    path('vuelos/<int:pk>/', views.detalle_vuelo, name='detalle_de_vuelo'),
+
     # Login y Logout con vistas genéricas
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
