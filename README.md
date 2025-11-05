@@ -23,7 +23,7 @@ Proyecto Con Fecha de Entrega Parte 1 - 4 de Agosto
 - Python 3  
 - Django 4.x  
 - Bootstrap 5 (opcional)  
-- SQLite (base de datos por defecto)  
+- SQLite (Base de datos por defecto)  
 
 ---
 
