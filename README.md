@@ -2,6 +2,8 @@
 
 Este proyecto está desarrollado en **Django** y permite gestionar vuelos, reservas y usuarios para una aerolínea. Ofrece una interfaz para usuarios y un panel de administración para el staff.
 
+Proyecto Con Fecha de Entrega Parte 1 - 4 de Agosto 
+
 ---
 
 ## 🚀 Características principales
