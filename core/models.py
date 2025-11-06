@@ -150,3 +150,89 @@ class Boleto(models.Model):
 
     def __str__(self):
         return f"Boleto {self.codigo_barra} para {self.reserva.codigo_reserva}"
+
+
+
+from django.utils import timezone
+from django.conf import settings
+
+# ---------------------------
+# Mensajes / Solicitudes (Cambio de asiento, cancelación, consulta)
+# ---------------------------
+class Mensaje(models.Model):
+    TIPO_SOLICITUD_CHOICES = (
+        ('cambio_asiento', 'Cambio de asiento'),
+        ('cancelacion', 'Cancelación de vuelo'),
+        ('consulta', 'Consulta general'),
+    )
+
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('respondido', 'Respondido'),
+        ('cerrado', 'Cerrado'),
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='mensajes_enviados'
+    )
+    vuelo = models.ForeignKey('Vuelo', on_delete=models.CASCADE, related_name='mensajes')
+    reserva = models.ForeignKey('Reserva', on_delete=models.CASCADE, related_name='mensajes')
+    asiento_solicitado = models.ForeignKey(
+        'Asiento',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='mensajes'
+    )
+
+    tipo_solicitud = models.CharField(max_length=30, choices=TIPO_SOLICITUD_CHOICES)
+    mensaje = models.TextField()
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    respuesta_admin = models.TextField(blank=True, null=True)
+    fecha_respuesta = models.DateTimeField(blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+
+    def __str__(self):
+        return f"Solicitud de {self.usuario.username} - {self.get_tipo_solicitud_display()}"
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+class Mensaje(models.Model):
+    TIPO_SOLICITUD_CHOICES = (
+        ('cambio_asiento', 'Cambio de asiento'),
+        ('cancelacion', 'Cancelación de vuelo'),
+        ('consulta', 'Consulta general'),
+    )
+
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('respondido', 'Respondido'),
+        ('cerrado', 'Cerrado'),
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='mensajes_enviados'
+    )
+    vuelo = models.ForeignKey('Vuelo', on_delete=models.CASCADE, related_name='mensajes')
+    reserva = models.ForeignKey('Reserva', on_delete=models.CASCADE, related_name='mensajes')
+    asiento_solicitado = models.ForeignKey(
+        'Asiento', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='mensajes'
+    )
+
+    tipo_solicitud = models.CharField(max_length=30, choices=TIPO_SOLICITUD_CHOICES)
+    mensaje = models.TextField()
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    respuesta_admin = models.TextField(blank=True, null=True)
+    fecha_respuesta = models.DateTimeField(blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+
+    def __str__(self):
+        return f"Solicitud de {self.usuario.username} - {self.get_tipo_solicitud_display()}"

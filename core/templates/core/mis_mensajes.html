@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📩 Mis Mensajes</h2>
+  <hr>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if mensajes %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Vuelo</th>
+          <th>Tipo</th>
+          <th>Mensaje</th>
+          <th>Respuesta</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in mensajes %}
+        <tr>
+          <td>{{ m.fecha_creacion|date:"d/m/Y H:i" }}</td>
+          <td>{{ m.vuelo }}</td>
+          <td>{{ m.tipo_solicitud }}</td>
+          <td>{{ m.mensaje }}</td>
+          <td>{{ m.respuesta_admin|default:"-" }}</td>
+          <td>{{ m.estado|title }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No tienes mensajes todavía.</p>
+  {% endif %}
+
+  <hr>
+  <h4>✈️ Enviar nueva solicitud</h4>
+
+  {% if reservas %}
+    <p>Selecciona una de tus reservas para enviar una solicitud al administrador:</p>
+    <ul class="list-group">
+      {% for reserva in reservas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            <strong>Vuelo:</strong> {{ reserva.vuelo }} <br>
+            <strong>Fecha:</strong> {{ reserva.fecha_reserva|date:"d/m/Y" }}
+          </span>
+          <a href="{% url 'enviar_solicitud' reserva.id %}" class="btn btn-primary btn-sm">
+            ✉️ Enviar solicitud
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No tienes reservas para enviar solicitudes.</p>
+  {% endif %}
+</div>
+{% endblock %}

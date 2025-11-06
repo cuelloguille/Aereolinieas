@@ -13,6 +13,7 @@ Este proyecto está desarrollado en **Django** y permite gestionar vuelos, reser
 - Roles de usuario diferenciados (administrador y cliente)  
 - Validaciones de datos y manejo de errores  
 - Uso opcional de Bootstrap para estilos  
+- Creacion de sistemas de mensajerias para  cambiar asientos o mandar dudas 
 
 ---
 
@@ -107,8 +108,8 @@ python manage.py runserver
 
 | Rol             | Funciones principales                              |
 |-----------------|---------------------------------------------------|
-| Administrador   | Gestión total: vuelos, usuarios, aviones, reservas|
-| Usuario Cliente | Registro, inicio de sesión, ver vuelos, reservar y cancelar|
+| Administrador   | Gestión total: vuelos, usuarios, aviones, reservas,mensajes|
+| Usuario Cliente | Registro, inicio de sesión, ver vuelos, reservar y cancelar,mensajes|
 
 ---
 

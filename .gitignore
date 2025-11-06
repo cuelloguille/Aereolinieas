@@ -1,0 +1,36 @@
+# 🐍 Entornos virtuales
+env/
+venv/
+ENV/
+.venv/
+
+# ⚙️ Configuraciones locales o sensibles
+*.env
+*.local
+*.sqlite3
+
+# 🧩 Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 🪵 Logs y archivos temporales
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.mo
+*.swp
+*.swo
+.DS_Store
+
+# 📦 Archivos de Django
+staticfiles/
+media/
+db.sqlite3
+
+# 💻 Configuración de editores
+.vscode/
+.idea/

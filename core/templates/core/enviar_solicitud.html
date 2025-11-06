@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Enviar Solicitud</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="tipo_solicitud" class="form-label">Tipo de Solicitud</label>
+      <select name="tipo_solicitud" id="tipo_solicitud" class="form-select" required>
+        <option value="">Seleccionar tipo...</option>
+        <option value="cambio_asiento">Cambio de Asiento</option>
+        <option value="cancelacion">Cancelación de Vuelo</option>
+        <option value="consulta">Consulta General</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="mensaje" class="form-label">Mensaje</label>
+      <textarea name="mensaje" id="mensaje" class="form-control" rows="4" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="asiento_id" class="form-label">Asiento (opcional)</label>
+      <input type="text" name="asiento_id" id="asiento_id" class="form-control" placeholder="Ej: 12B">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+    <a href="{% url 'mis_reservas' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

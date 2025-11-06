@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📋 Solicitudes de Usuarios</h2>
+
+  {% if mensajes %}
+    <table class="table table-bordered table-hover mt-3">
+      <thead class="table-light">
+        <tr>
+          <th>Usuario</th>
+          <th>Vuelo</th>
+          <th>Tipo</th>
+          <th>Mensaje</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in mensajes %}
+        <tr>
+          <td>{{ m.usuario.username }}</td>
+          <td>{{ m.vuelo }}</td>
+          <td>{{ m.tipo_solicitud }}</td>
+          <td>{{ m.mensaje }}</td>
+          <td>{{ m.estado }}</td>
+          <td>{{ m.fecha_creacion|date:"d/m/Y H:i" }}</td>
+          <td>
+            <a href="{% url 'responder_mensaje' m.id %}" class="btn btn-sm btn-primary">Responder</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay solicitudes pendientes.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>✉️ Responder Mensaje</h2>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <p><strong>Usuario:</strong> {{ mensaje.usuario.username }}</p>
+      <p><strong>Vuelo:</strong> {{ mensaje.vuelo }}</p>
+      <p><strong>Mensaje:</strong> {{ mensaje.mensaje }}</p>
+      <p><strong>Fecha:</strong> {{ mensaje.fecha_creacion|date:"d/m/Y H:i" }}</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Respuesta del Administrador:</label>
+      <textarea name="respuesta_admin" class="form-control" rows="4" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Estado:</label>
+      <select name="estado" class="form-select">
+        <option value="pendiente" {% if mensaje.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+        <option value="respondido" {% if mensaje.estado == "respondido" %}selected{% endif %}>Respondido</option>
+        <option value="cerrado" {% if mensaje.estado == "cerrado" %}selected{% endif %}>Cerrado</option>
+      </select>
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">Enviar Respuesta</button>
+      <a href="{% url 'listar_solicitudes' %}" class="btn btn-secondary">Volver</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

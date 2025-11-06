@@ -13,12 +13,14 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse
-
-from .models import Vuelo, Pasajero, Reserva, Asiento
-from .forms import RegistroForm
+from django.utils import timezone
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+
+from .models import Vuelo, Pasajero, Reserva, Asiento, Mensaje
+from .forms import RegistroForm
+
 
 # ========================
 # LOGIN PERSONALIZADO
@@ -29,6 +31,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+
             # Redirección según rol
             if user.is_staff or user.is_superuser:
                 messages.success(request, f"Bienvenido, Admin {user.username}!")
@@ -53,7 +56,7 @@ def vuelos_list(request):
     # Parámetros de búsqueda
     origen = request.GET.get('origen', '').strip()
     destino = request.GET.get('destino', '').strip()
-    fecha = request.GET.get('fecha', '').strip()  # formato 'YYYY-MM-DD'
+    fecha = request.GET.get('fecha', '').strip()
 
     # Aplicar filtros
     if origen:
@@ -223,33 +226,22 @@ def generar_boleto_pdf(request, reserva_id):
     p.setFont("Helvetica-Bold", 24)
     p.drawCentredString(width / 2, height - 60, "Boleto de Reserva")
 
-    # Pasajero y vuelo
+    # Datos
     p.setFillColorRGB(0, 0, 0)
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, height - 150, "Pasajero:")
     p.setFont("Helvetica", 12)
     p.drawString(60, height - 170, f"Nombre: {reserva.pasajero.nombre}")
     p.drawString(60, height - 190, f"Documento: {reserva.pasajero.documento}")
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, height - 280, "Vuelo:")
-    p.setFont("Helvetica", 12)
+    p.drawString(60, height - 220, f"Vuelo: {reserva.vuelo.origen} → {reserva.vuelo.destino}")
     fecha_vuelo = reserva.vuelo.fecha_salida.strftime('%d/%m/%Y %H:%M') if hasattr(reserva.vuelo, 'fecha_salida') else "Fecha no disponible"
     asiento_numero = reserva.asiento.numero if reserva.asiento else "Sin asignar"
-    p.drawString(60, height - 300, f"Ruta: {reserva.vuelo.origen} → {reserva.vuelo.destino}")
-    p.drawString(60, height - 320, f"Fecha: {fecha_vuelo}")
-    p.drawString(60, height - 340, f"Asiento: {asiento_numero}")
-    p.drawString(60, height - 360, f"Precio: ${reserva.precio:,.2f}")
+    p.drawString(60, height - 240, f"Fecha: {fecha_vuelo}")
+    p.drawString(60, height - 260, f"Asiento: {asiento_numero}")
+    p.drawString(60, height - 280, f"Precio: ${reserva.precio:,.2f}")
 
     # Código
-    code_box_width = 250
-    code_box_height = 60
-    code_x = (width - code_box_width) / 2
-    code_y = height - 450 - code_box_height
-    p.setFillColorRGB(0.9, 0.2, 0.2)
-    p.roundRect(code_x, code_y, code_box_width, code_box_height, 8, fill=True, stroke=False)
-    p.setFillColorRGB(1, 1, 1)
     p.setFont("Helvetica-Bold", 20)
-    p.drawCentredString(width / 2, code_y + 20, reserva.codigo_reserva.upper())
+    p.setFillColorRGB(0.9, 0.2, 0.2)
+    p.drawCentredString(width / 2, height - 350, reserva.codigo_reserva.upper())
 
     # Footer
     p.setFont("Helvetica-Oblique", 10)
@@ -274,3 +266,132 @@ def detalle_vuelo(request, pk):
         'reservas': reservas,
         'asientos': asientos,
     })
+
+
+# ========================
+# SISTEMA DE MENSAJES / SOLICITUDES
+# ========================
+@login_required
+def enviar_solicitud(request, reserva_id):
+    """Permite que un pasajero envíe una solicitud (cambio, cancelación, etc.)"""
+    reserva = get_object_or_404(Reserva, id=reserva_id, pasajero__usuario=request.user)
+
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo_solicitud')
+        mensaje = request.POST.get('mensaje')
+        asiento_id = request.POST.get('asiento_id')
+
+        asiento = Asiento.objects.filter(id=asiento_id).first() if asiento_id else None
+
+        if not mensaje:
+            messages.error(request, "Debes escribir un mensaje para enviar la solicitud.")
+            return redirect('enviar_solicitud', reserva_id=reserva.id)
+
+        Mensaje.objects.create(
+            usuario=request.user,
+            vuelo=reserva.vuelo,
+            reserva=reserva,
+            asiento_solicitado=asiento,
+            tipo_solicitud=tipo,
+            mensaje=mensaje,
+        )
+        messages.success(request, "Tu solicitud fue enviada correctamente.")
+        return redirect('mis_mensajes')
+
+    return render(request, 'core/enviar_solicitud.html', {'reserva': reserva})
+
+
+@login_required
+def mis_mensajes(request):
+    """Lista de mensajes enviados por el usuario y sus reservas disponibles para enviar nuevas solicitudes."""
+    mensajes = Mensaje.objects.filter(usuario=request.user).select_related('vuelo', 'reserva').order_by('-fecha_creacion')
+
+    # Traemos las reservas activas del pasajero logueado
+    reservas = Reserva.objects.filter(pasajero__usuario=request.user, estado='activa').select_related('vuelo')
+
+    context = {
+        'mensajes': mensajes,
+        'reservas': reservas,
+    }
+    return render(request, 'core/mis_mensajes.html', context)
+
+
+@login_required
+def listar_solicitudes(request):
+    """Vista para el admin que muestra todas las solicitudes."""
+    if not request.user.is_staff and getattr(request.user, 'rol', '') != 'admin':
+        messages.error(request, "No tienes permiso para acceder a esta página.")
+        return redirect('vuelos_list')
+
+    mensajes = Mensaje.objects.select_related('usuario', 'vuelo', 'reserva').order_by('-fecha_creacion')
+    return render(request, 'core/listar_solicitudes.html', {'mensajes': mensajes})
+
+
+@login_required
+def responder_mensaje(request, mensaje_id):
+    """Permite al administrador responder una solicitud."""
+    if not request.user.is_staff and getattr(request.user, 'rol', '') != 'admin':
+        messages.error(request, "No tienes permiso para acceder a esta página.")
+        return redirect('vuelos_list')
+
+    mensaje = get_object_or_404(Mensaje, id=mensaje_id)
+
+    if request.method == 'POST':
+        respuesta = request.POST.get('respuesta_admin')
+        estado = request.POST.get('estado')
+
+        if not respuesta:
+            messages.error(request, "Debes escribir una respuesta.")
+            return redirect('responder_mensaje', mensaje_id=mensaje.id)
+
+        mensaje.respuesta_admin = respuesta
+        mensaje.estado = estado
+        mensaje.fecha_respuesta = timezone.now()
+        mensaje.save()
+
+        messages.success(request, "Respuesta enviada correctamente.")
+        return redirect('listar_solicitudes')
+
+    return render(request, 'core/responder_mensaje.html', {'mensaje': mensaje})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Mensaje
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.utils import timezone
+from .models import Mensaje
+
+@staff_member_required
+def panel_mensajes(request):
+    """Panel para el administrador: lista y gestiona solicitudes de usuarios."""
+    mensajes = Mensaje.objects.select_related('usuario', 'vuelo', 'reserva').order_by('-fecha_creacion')
+    return render(request, 'core/panel_mensajes.html', {'mensajes': mensajes})
+
+
+@staff_member_required
+def responder_mensaje(request, mensaje_id):
+    """Permite al admin responder una solicitud."""
+    mensaje = get_object_or_404(Mensaje, id=mensaje_id)
+
+    if request.method == 'POST':
+        respuesta = request.POST.get('respuesta_admin')
+        estado = request.POST.get('estado')
+
+        if not respuesta:
+            messages.error(request, "Debes escribir una respuesta antes de enviar.")
+            return redirect('responder_mensaje', mensaje_id=mensaje.id)
+
+        mensaje.respuesta_admin = respuesta
+        mensaje.estado = estado
+        mensaje.fecha_respuesta = timezone.now()
+        mensaje.save()
+
+        messages.success(request, "La respuesta fue enviada correctamente.")
+        return redirect('panel_mensajes')
+
+    return render(request, 'core/responder_mensaje.html', {'mensaje': mensaje})
+

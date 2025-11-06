@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📬 Panel de Mensajes / Solicitudes</h2>
+  <hr>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if mensajes %}
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Vuelo</th>
+        <th>Tipo</th>
+        <th>Mensaje</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mensajes %}
+      <tr>
+        <td>{{ m.fecha_creacion|date:"d/m/Y H:i" }}</td>
+        <td>{{ m.usuario.username }}</td>
+        <td>{{ m.vuelo }}</td>
+        <td>{{ m.get_tipo_solicitud_display }}</td>
+        <td>{{ m.mensaje|truncatechars:50 }}</td>
+        <td>
+          <span class="badge {% if m.estado == 'pendiente' %}bg-warning{% elif m.estado == 'respondido' %}bg-success{% else %}bg-secondary{% endif %}">
+            {{ m.estado|title }}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'responder_mensaje' m.id %}" class="btn btn-sm btn-primary">Responder</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>No hay mensajes enviados aún.</p>
+  {% endif %}
+</div>
+{% endblock %}

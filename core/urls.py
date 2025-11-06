@@ -42,31 +42,6 @@ schema_view = get_schema_view(
 )
 
 # ===============================
-# 🔹 URLs web tradicionales
-# ===============================
-web_urls = [
-    path('', RedirectView.as_view(pattern_name='vuelos_list', permanent=False)),
-
-    path('vuelos/', views.vuelos_list, name='vuelos_list'),
-    path('vuelos/<int:vuelo_id>/reservar/', views.reservar_vuelo, name='reservar_vuelo'),
-    path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
-    path('cancelar-reserva/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
-
-    # ✅ NUEVA RUTA: Detalle de vuelo
-    path('vuelos/<int:pk>/', views.detalle_vuelo, name='detalle_de_vuelo'),
-
-    # Login y Logout con vistas genéricas
-    path('login/', views.login_view, name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-
-    # Registro de usuario
-    path('registro/', views.registro, name='registro'),
-
-    # Generación de boleto PDF
-    path('reserva/<int:reserva_id>/boleto/', views.generar_boleto_pdf, name='generar_boleto_pdf'),
-]
-
-# ===============================
 # 🔹 URLs API REST
 # ===============================
 api_urls = [
@@ -74,12 +49,46 @@ api_urls = [
 ]
 
 # ===============================
-# 🔹 URLs finales + Swagger
+# 🔹 URLs web tradicionales
 # ===============================
-urlpatterns = web_urls + [
+web_urls = [
+    path('', RedirectView.as_view(pattern_name='vuelos_list', permanent=False)),
+
+    # Vuelos
+    path('vuelos/', views.vuelos_list, name='vuelos_list'),
+    path('vuelos/<int:pk>/', views.detalle_vuelo, name='detalle_de_vuelo'),
+    path('vuelos/<int:vuelo_id>/reservar/', views.reservar_vuelo, name='reservar_vuelo'),
+
+    # Reservas
+    path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
+    path('cancelar-reserva/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
+    path('reserva/<int:reserva_id>/boleto/', views.generar_boleto_pdf, name='generar_boleto_pdf'),
+
+    # Autenticación
+    path('login/', views.login_view, name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('registro/', views.registro, name='registro'),
+]
+
+# ===============================
+# 🔹 Sistema de mensajes
+# ===============================
+mensajes_urls = [
+    path('mensajes/', views.mis_mensajes, name='mis_mensajes'),
+    path('solicitud/<int:reserva_id>/', views.enviar_solicitud, name='enviar_solicitud'),
+    path('solicitudes/', views.listar_solicitudes, name='listar_solicitudes'),
+    path('responder/<int:mensaje_id>/', views.responder_mensaje, name='responder_mensaje'),
+    path('panel-mensajes/', views.panel_mensajes, name='panel_mensajes'),
+    path('responder/<int:mensaje_id>/', views.responder_mensaje, name='responder_mensaje'),
+]
+
+# ===============================
+# 🔹 URLs finales combinadas
+# ===============================
+urlpatterns = web_urls + mensajes_urls + [
     path('api/', include(api_urls)),
 
-    # Documentación Swagger / Redoc
+    # Swagger / Redoc
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
