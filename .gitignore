@@ -1,0 +1,47 @@
+# Entornos virtuales
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Django / bases de datos / migrations locales
+db.sqlite3
+*.sqlite3
+*.log
+*.pot
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Static / build
+staticfiles/
+media/
+node_modules/
+
+# PyCharm
+*.iml
+
+# Coverage
+htmlcov/
+.coverage
+
+# Otros
+*.egg-info/
+dist/
+build/
